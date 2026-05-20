@@ -43,7 +43,7 @@ const dni = localStorage.getItem('dniUsuario');
         return;
       }
       const response = await fetch(
-        'https://vitalsmedic-production.up.railway.app/api/triaje',
+        'https://backend-46yr.onrender.com/api/triaje',
         {
           method: 'POST',
           headers: {
