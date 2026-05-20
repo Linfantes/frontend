@@ -44,7 +44,7 @@ const SignosVitales = () => {
         setMensaje('Midiendo signos vitales...');
         setListo(false);
         setProgreso(60);
-        const response = await fetch('https://vitalsmedic-production.up.railway.app/api/signos');
+        const response = await fetch('https://backend-46yr.onrender.com/api/signos');
         const data = await response.json();
         if (data.length > 0) {
           const ultimo = data[0];
