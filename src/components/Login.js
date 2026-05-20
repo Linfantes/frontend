@@ -30,7 +30,7 @@ const InicioSesion = () => {
     setCargando(true);
     setMensaje('');
     try {
-      const respuesta = await fetch('http://localhost:4000/api/login', {
+      const respuesta = await fetch('https://backend-46yr.onrender.com/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dni }),
