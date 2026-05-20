@@ -39,7 +39,7 @@ const Admision = () => {
     e.preventDefault();
     try {
       const response = await fetch(
-        'https://vitalsmedic-production.up.railway.app/api/paciente',
+        'https://backend-46yr.onrender.com/api/paciente',
         {
           method: 'POST',
           headers: {
