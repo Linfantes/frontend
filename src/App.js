@@ -12,78 +12,95 @@ import Dashboard from './components/Dashboard';
 import Paciente from './components/Paciente';
 import SignosVitales from './components/SignosVitales';
 
-const ProtectedRoute = ({
-  children,
-  rolesPermitidos
-}) => {
-  const rol =
-    localStorage.getItem('rol');
+const ProtectedRoute = ({ children, rolesPermitidos }) => {
+  const rol = localStorage.getItem('rol');
+  
+  // Si no hay sesión, al login
   if (!rol) {
     return <Navigate to="/" replace />;
   }
+  
   if (!rolesPermitidos.includes(rol)) {
     return <Navigate to="/" replace />;
   }
+  
   return children;
 };
+
+const PublicRoute = ({ children }) => {
+  const rol = localStorage.getItem('rol');
+
+  // Si ya tiene un rol, lo mandamos a su panel automáticamente
+  if (rol === 'Admin') return <Navigate to="/registro" replace />;
+  if (rol === 'Doctor') return <Navigate to="/dashboard" replace />;
+  if (rol === 'Admision') return <Navigate to="/admision" replace />;
+  if (rol === 'Paciente') return <Navigate to="/paciente" replace />;
+
+  // Si no hay sesión, le mostramos el Login (children)
+  return children;
+};
+
 const App = () => {
   return (
     <Router>
       <Routes>
+        {/* Ruta Pública (El Login) */}
         <Route
           path="/"
-          element={<InicioSesion />}
+          element={
+            <PublicRoute>
+              <InicioSesion />
+            </PublicRoute>
+          }
         />
+
+        {/* Rutas Privadas */}
         <Route
           path="/paciente"
-          element={<Paciente />}
+          element={
+            <ProtectedRoute rolesPermitidos={['Paciente']}>
+              <Paciente />
+            </ProtectedRoute>
+          }
         />
+
         <Route
           path="/registro"
           element={
-            <ProtectedRoute
-              rolesPermitidos={['Admin']}
-            >
+            <ProtectedRoute rolesPermitidos={['Admin']}>
               <Registro />
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/admision"
           element={
-            <ProtectedRoute
-              rolesPermitidos={[
-                'Admision'
-              ]}
-            >
+            <ProtectedRoute rolesPermitidos={['Admision']}>
               <Admision />
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute
-              rolesPermitidos={[
-                'Doctor'
-              ]}
-            >
+            <ProtectedRoute rolesPermitidos={['Doctor']}>
               <Dashboard />
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/SignosVitales"
           element={
-            <ProtectedRoute
-              rolesPermitidos={[
-                'Doctor'
-              ]}
-            >
+            <ProtectedRoute rolesPermitidos={['Doctor']}>
               <SignosVitales />
             </ProtectedRoute>
           }
         />
+
+        {/* Ruta comodín (Si ponen una URL que no existe, van al login o a su panel) */}
         <Route
           path="*"
           element={<Navigate to="/" replace />}
