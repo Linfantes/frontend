@@ -18,7 +18,7 @@ const dni = localStorage.getItem('dniUsuario');
   const fetchPatientInfo = async () => {
     try {
       const response = await fetch(
-        `https://vitalsmedic-production.up.railway.app/api/paciente/dni/${dni}`
+        `https://backend-46yr.onrender.com/api/paciente/dni/${dni}`
       );
       if (!response.ok) {
         throw new Error(`Error al obtener paciente: ${response.status}`);
