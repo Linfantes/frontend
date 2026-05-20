@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const HeartIconComponent = ({ dim = 20, tint = '#fff' }) => (
   <svg
@@ -76,9 +77,11 @@ const TagLateral = ({
 );
 
 const ModuloInscripcion = () => {
-  const [tipoPuesto, setTipoPuesto] = useState('Doctor');
+  const navigate = useNavigate();
 
+  const [tipoPuesto, setTipoPuesto] = useState('Doctor');
   const [loading, setLoading] = useState(false);
+  const [mostrarClave, setMostrarClave] = useState(false); 
 
   const [campos, setCampos] = useState({
     nomUser: '',
@@ -129,51 +132,32 @@ const ModuloInscripcion = () => {
   };
 
   const manejarInput = (e) => {
-  const { name, value } = e.target;
+    const { name, value } = e.target;
 
-  // DNI: solo números
-  if (name === 'dniUser') {
-    const soloNumeros = value.replace(/\D/g, '');
+    if (name === 'dniUser') {
+      const soloNumeros = value.replace(/\D/g, '');
+      setCampos({ ...campos, [name]: soloNumeros });
+      return;
+    }
 
-    setCampos({
-      ...campos,
-      [name]: soloNumeros
-    });
+    if (name === 'nomUser' || name === 'apeUser') {
+      const soloLetras = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+      setCampos({ ...campos, [name]: soloLetras });
+      return;
+    }
 
-    return;
-  }
-
-  // Nombre y apellido: solo letras y espacios
-  if (name === 'nomUser' || name === 'apeUser') {
-    const soloLetras = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
-
-    setCampos({
-      ...campos,
-      [name]: soloLetras
-    });
-
-    return;
-  }
-
-  setCampos({
-    ...campos,
-    [name]: value
-  });
-};
+    setCampos({ ...campos, [name]: value });
+  };
 
   const ejecutarRegistro = async (e) => {
     e.preventDefault();
-
-    // Evitar spam clicks
     if (loading) return;
 
-    // VALIDAR DNI
     if (campos.dniUser.length !== 8) {
       alert('El DNI debe tener exactamente 8 números');
       return;
     }
 
-    // VALIDAR PASSWORD FUERTE
     const regexPassword =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#_-])[A-Za-z\d@$!%*?&.#_-]{8,}$/;
 
@@ -188,14 +172,10 @@ const ModuloInscripcion = () => {
 
     try {
       const response = await fetch(
-        'https://vitalsmedic-production.up.railway.app/api/register',
+        'http://localhost:4000/api/register',
         {
           method: 'POST',
-
-          headers: {
-            'Content-Type': 'application/json'
-          },
-
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             nombre: campos.nomUser,
             apellido: campos.apeUser,
@@ -211,7 +191,6 @@ const ModuloInscripcion = () => {
 
       if (data.success) {
         alert('Usuario registrado correctamente');
-
         setCampos({
           nomUser: '',
           apeUser: '',
@@ -230,6 +209,11 @@ const ModuloInscripcion = () => {
     }
   };
 
+  const cerrarSesion = () => {
+    localStorage.clear();
+    navigate('/');
+  };
+
   const calcY = (key) =>
     esViewportAncho ? coords.mb[key] : coords.pc[key];
 
@@ -240,28 +224,17 @@ const ModuloInscripcion = () => {
           0%,100%{transform:translateY(0)}
           50%{transform:translateY(-10px)}
         }
-
         @keyframes floatEffect2 {
           0%,100%{transform:translateY(0)}
           50%{transform:translateY(-14px)}
         }
-
         @keyframes floatEffect3 {
           0%,100%{transform:translateY(0)}
           50%{transform:translateY(-8px)}
         }
-
-        .m1{
-          animation:floatEffect1 4s ease-in-out infinite
-        }
-
-        .m2{
-          animation:floatEffect2 5s ease-in-out infinite
-        }
-
-        .m3{
-          animation:floatEffect3 3.5s ease-in-out infinite
-        }
+        .m1{animation:floatEffect1 4s ease-in-out infinite}
+        .m2{animation:floatEffect2 5s ease-in-out infinite}
+        .m3{animation:floatEffect3 3.5s ease-in-out infinite}
 
         .tit-dinamico {
           font-weight: 900;
@@ -272,47 +245,42 @@ const ModuloInscripcion = () => {
           font-family: inherit;
         }
 
+        /* --- CORRECCIÓN: Eliminado width fijo de PC --- */
         .panel-form {
-          width: 520px;
+          /* width: 520px; <-- Eliminado */
         }
 
         .inner-form {
           width: 100%;
-          max-width: 380px;
+          /* --- CORRECCIÓN: Aumentado max-width de 380px a 500px --- */
+          max-width: 500px; 
           padding: 18px;
           box-sizing: border-box;
+          /* --- CORRECCIÓN: Centrado horizontal automático --- */
+          margin: 0 auto; 
         }
 
         @media (max-width: 767px) {
           .tit-dinamico {
             font-size: 26px !important;
           }
-
           .panel-form {
             width: 100% !important;
             height: auto !important;
             padding-top: 15px !important;
           }
-
           .inner-form {
-            max-width: 95%;
+            max-width: 95% !important;
             padding: 12px !important;
           }
-
           .med-tag {
             padding: 10px 14px !important;
             border-radius: 12px !important;
           }
         }
 
-        ::-webkit-scrollbar {
-          width: 6px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
-          border-radius: 10px;
-        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
       `}</style>
 
       {!esViewportAncho && (
@@ -320,101 +288,57 @@ const ModuloInscripcion = () => {
           <div style={mEstilos.capaContent}>
             <div style={mEstilos.brandHdr}>
               <span style={{ fontSize: 28 }}>⚕️</span>
-
-              <span style={{ fontSize: 22, fontWeight: 800 }}>
-                VitalScan
-              </span>
+              <span style={{ fontSize: 22, fontWeight: 800 }}>VitalScan</span>
             </div>
-
             <div style={{ marginTop: '10px' }}>
-              <h2
-                className="tit-dinamico"
-                style={{ color: '#fff' }}
-              >
-                Sistema de Triaje Inteligente
-              </h2>
-
-              <p
-                style={{
-                  fontSize: '14px',
-                  opacity: 0.85,
-                  maxWidth: '360px'
-                }}
-              >
-                Gestión avanzada de pacientes en el proceso de
-                triaje.
-              </p>
+              <h2 className="tit-dinamico" style={{ color: '#fff' }}>Sistema de Triaje Inteligente</h2>
+              <p style={{ fontSize: '14px', opacity: 0.85, maxWidth: '360px' }}>Gestión avanzada de pacientes en el proceso de triaje.</p>
             </div>
           </div>
-
-          <TagLateral
-            anim="m1"
-            yPos="140px"
-            xPos="40px"
-            icono={<HeartIconComponent />}
-            titulo="Pulso promedio"
-            valor="78 bpm"
-            estiloColor={{
-              bk: 'rgba(255,255,255,0.12)',
-              brd: 'rgba(255,255,255,0.2)'
-            }}
-          />
-
-          <TagLateral
-            anim="m2"
-            yPos={calcY('b')}
-            xPos="70px"
-            icono={<span style={{ fontSize: 18 }}>🌡️</span>}
-            titulo="Temperatura"
-            valor="36.5 °C"
-            estiloColor={{
-              bk: 'rgba(245,158,11,0.2)',
-              brd: 'rgba(245,158,11,0.4)'
-            }}
-          />
-
-          <TagLateral
-            anim="m3"
-            yPos={calcY('c')}
-            xPos="40px"
-            icono={<span style={{ fontSize: 18 }}>💧</span>}
-            titulo="Oxigenación"
-            valor="98%"
-            estiloColor={{
-              bk: 'rgba(255,255,255,0.12)',
-              brd: 'rgba(255,255,255,0.2)'
-            }}
-          />
-
+          <TagLateral anim="m1" yPos="140px" xPos="40px" icono={<HeartIconComponent />} titulo="Pulso promedio" valor="78 bpm" estiloColor={{ bk: 'rgba(255,255,255,0.12)', brd: 'rgba(255,255,255,0.2)' }} />
+          <TagLateral anim="m2" yPos={calcY('b')} xPos="70px" icono={<span style={{ fontSize: 18 }}>🌡️</span>} titulo="Temperatura" valor="36.5 °C" estiloColor={{ bk: 'rgba(245,158,11,0.2)', brd: 'rgba(245,158,11,0.4)' }} />
+          <TagLateral anim="m3" yPos={calcY('c')} xPos="40px" icono={<span style={{ fontSize: 18 }}>💧</span>} titulo="Oxigenación" valor="98%" estiloColor={{ bk: 'rgba(255,255,255,0.12)', brd: 'rgba(255,255,255,0.2)' }} />
           <div style={mEstilos.shapeOverlay} />
         </div>
       )}
 
       <div className="panel-form" style={mEstilos.ladoBlanco}>
         <div className="inner-form" style={mEstilos.boxForm}>
-          <div style={{ marginBottom: 12 }}>
-            <h2 className="tit-dinamico">Crear cuenta</h2>
-
-            <p
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12, gap: '10px' }}>
+            <div>
+              <h2 className="tit-dinamico">Crear cuenta</h2>
+              <p style={{ fontSize: '13px', color: '#94a3b8', margin: 0 }}>Registrar usuarios</p>
+            </div>
+            
+            <button
+              type="button"
+              onClick={cerrarSesion}
               style={{
-                fontSize: '13px',
-                color: '#94a3b8',
-                margin: 0
+                padding: '6px 12px',
+                backgroundColor: '#fee2e2',
+                color: '#991b1b',
+                border: '1px solid #fca5a5',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'background-color 0.2s',
+                whiteSpace: 'nowrap' // Evita que el texto se rompa en dos líneas
               }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#fecaca'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#fee2e2'}
             >
-              Registrar usuarios
-            </p>
+              <span>🚪</span> Salir
+            </button>
           </div>
 
-          <form
-            onSubmit={ejecutarRegistro}
-            style={mEstilos.stackInputs}
-          >
+          <form onSubmit={ejecutarRegistro} style={mEstilos.stackInputs}>
             <div style={mEstilos.grpInput}>
-              <label style={mEstilos.lblTxt}>
-                Selecciona el rol
-              </label>
-
+              <label style={mEstilos.lblTxt}>Selecciona el rol</label>
               <div style={mEstilos.filaRoles}>
                 {tiposRol.map((r) => (
                   <button
@@ -423,21 +347,11 @@ const ModuloInscripcion = () => {
                     onClick={() => setTipoPuesto(r.id)}
                     style={{
                       ...mEstilos.btRol,
-                      ...(tipoPuesto === r.id
-                        ? mEstilos.btRolOn
-                        : {})
+                      ...(tipoPuesto === r.id ? mEstilos.btRolOn : {})
                     }}
                   >
                     <span style={{ fontSize: 18 }}>{r.em}</span>
-
-                    <span
-                      style={{
-                        fontSize: 11,
-                        fontWeight: '700'
-                      }}
-                    >
-                      {r.tx}
-                    </span>
+                    <span style={{ fontSize: 11, fontWeight: '700' }}>{r.tx}</span>
                   </button>
                 ))}
               </div>
@@ -446,50 +360,21 @@ const ModuloInscripcion = () => {
             <div style={{ display: 'flex', gap: 10 }}>
               <div style={{ flex: 1 }}>
                 <label style={mEstilos.lblTxt}>Nombre</label>
-
-                <input
-                  name="nomUser"
-                  style={mEstilos.inputBox}
-                  placeholder="Nombre"
-                  value={campos.nomUser}
-                  onChange={manejarInput}
-                  required
-                />
+                <input name="nomUser" style={mEstilos.inputBox} placeholder="Nombre" value={campos.nomUser} onChange={manejarInput} required />
               </div>
-
               <div style={{ flex: 1 }}>
                 <label style={mEstilos.lblTxt}>Apellido</label>
-
-                <input
-                  name="apeUser"
-                  style={mEstilos.inputBox}
-                  placeholder="Apellido"
-                  value={campos.apeUser}
-                  onChange={manejarInput}
-                  required
-                />
+                <input name="apeUser" style={mEstilos.inputBox} placeholder="Apellido" value={campos.apeUser} onChange={manejarInput} required />
               </div>
             </div>
 
             {tipoPuesto === 'Doctor' && (
               <div style={mEstilos.grpInput}>
-                <label style={mEstilos.lblTxt}>
-                  Especialidad
-                </label>
-
-                <select
-                  name="especialidadMed"
-                  style={mEstilos.inputBox}
-                  value={campos.especialidadMed}
-                  onChange={manejarInput}
-                  required
-                >
+                <label style={mEstilos.lblTxt}>Especialidad</label>
+                <select name="especialidadMed" style={mEstilos.inputBox} value={campos.especialidadMed} onChange={manejarInput} required>
                   <option value="">Selección...</option>
-
                   {areas.map((e) => (
-                    <option key={e} value={e}>
-                      {e}
-                    </option>
+                    <option key={e} value={e}>{e}</option>
                   ))}
                 </select>
               </div>
@@ -497,40 +382,34 @@ const ModuloInscripcion = () => {
 
             <div style={mEstilos.grpInput}>
               <label style={mEstilos.lblTxt}>DNI</label>
-
-              <input
-                name="dniUser"
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]{8}"
-                maxLength={8}
-                minLength={8}
-                style={mEstilos.inputBox}
-                placeholder="DNI"
-                value={campos.dniUser}
-                onChange={manejarInput}
-                required
-              />
+              <input name="dniUser" type="text" inputMode="numeric" pattern="[0-9]{8}" maxLength={8} minLength={8} style={mEstilos.inputBox} placeholder="DNI" value={campos.dniUser} onChange={manejarInput} required />
             </div>
 
-            {/* PASSWORD SEGURA */}
             <div style={mEstilos.grpInput}>
-              <label style={mEstilos.lblTxt}>
-                Contraseña
-              </label>
-
-              <input
-                name="claveUser"
-                type="password"
-                style={mEstilos.inputBox}
-                placeholder="Mínimo 8 caracteres"
-                value={campos.claveUser}
-                onChange={manejarInput}
-                required
-                minLength={8}
-                pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#_-])[A-Za-z\d@$!%*?&.#_-]{8,}$"
-                title="Debe tener mayúscula, minúscula, número y símbolo"
-              />
+              <label style={mEstilos.lblTxt}>Contraseña</label>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <input
+                  name="claveUser"
+                  type={mostrarClave ? "text" : "password"}
+                  style={{ ...mEstilos.inputBox, width: '100%', paddingRight: '40px' }}
+                  placeholder="Mínimo 8 caracteres"
+                  value={campos.claveUser}
+                  onChange={manejarInput}
+                  required
+                  minLength={8}
+                />
+                
+                <button
+                  type="button"
+                  onClick={() => setMostrarClave(!mostrarClave)}
+                  style={{
+                    position: 'absolute', right: '10px', background: 'transparent', border: 'none', cursor: 'pointer',
+                    fontSize: '16px', color: '#64748b', padding: 0, outline: 'none'
+                  }}
+                >
+                  {mostrarClave ? '🙈' : '👁️'}
+                </button>
+              </div>
             </div>
 
             <button
@@ -542,9 +421,7 @@ const ModuloInscripcion = () => {
               }}
               disabled={loading}
             >
-              {loading
-                ? 'Registrando...'
-                : 'Completar Registro'}
+              {loading ? 'Registrando...' : 'Completar Registro'}
             </button>
           </form>
         </div>
@@ -554,133 +431,23 @@ const ModuloInscripcion = () => {
 };
 
 const mEstilos = {
-  wrapPpal: {
-    display: 'flex',
-    minHeight: '100vh',
-    fontFamily: 'serif',
-    backgroundColor: '#f8fafc',
-    overflow: 'hidden'
-  },
-
-  ladoAzul: {
-    flex: 1,
-    background:
-      'linear-gradient(145deg, #1e3a5f 0%, #1a5276 40%, #1a6b8a 100%)',
-    position: 'sticky',
-    top: 0,
-    height: '100vh',
-    padding: '40px',
-    color: 'white',
-    display: 'flex',
-    flexDirection: 'column'
-  },
-
-  capaContent: {
-    zIndex: 10,
-    display: 'flex',
-    flexDirection: 'column'
-  },
-
-  brandHdr: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    marginBottom: '14px'
-  },
-
-  ladoBlanco: {
-    height: '100vh',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    paddingTop: '20px',
-    background: '#fff'
-  },
-
-  boxForm: {
-    display: 'flex',
-    flexDirection: 'column'
-  },
-
-  stackInputs: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px'
-  },
-
-  grpInput: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px'
-  },
-
-  lblTxt: {
-    fontSize: '12px',
-    fontWeight: '700',
-    color: '#334155'
-  },
-
-  inputBox: {
-    padding: '10px',
-    border: '1.5px solid #e2e8f0',
-    borderRadius: '10px',
-    outline: 'none',
-    fontSize: '14px'
-  },
-
-  filaRoles: {
-    display: 'flex',
-    gap: '8px'
-  },
-
-  btRol: {
-    flex: 1,
-    padding: '8px',
-    border: '2px solid #e2e8f0',
-    borderRadius: '10px',
-    background: 'white',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '4px',
-    cursor: 'pointer',
-    fontSize: '12px'
-  },
-
-  btRolOn: {
-    borderColor: '#f59e0b',
-    background: '#fffbeb',
-    color: '#b45309'
-  },
-
-  btnSubmit: {
-    padding: '12px',
-    background:
-      'linear-gradient(135deg, #f59e0b, #d97706)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '10px',
-    fontWeight: '700',
-    fontSize: '14px',
-    marginTop: '6px'
-  },
-
-  footLink: {
-    textAlign: 'center',
-    marginTop: '12px',
-    fontSize: '12px',
-    color: '#94a3b8'
-  },
-
-  shapeOverlay: {
-    position: 'absolute',
-    width: '260px',
-    height: '260px',
-    borderRadius: '50%',
-    border: '1px solid rgba(255,255,255,0.05)',
-    top: '-48px',
-    right: '-48px'
-  }
+  wrapPpal: { display: 'flex', minHeight: '100vh', fontFamily: 'serif', backgroundColor: '#f8fafc', overflow: 'hidden' },
+  ladoAzul: { flex: 1, background: 'linear-gradient(145deg, #1e3a5f 0%, #1a5276 40%, #1a6b8a 100%)', position: 'sticky', top: 0, height: '100vh', padding: '40px', color: 'white', display: 'flex', flexDirection: 'column' },
+  capaContent: { zIndex: 10, display: 'flex', flexDirection: 'column' },
+  brandHdr: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' },
+  /* --- CORRECCIÓN: Cambiado flex-start a center, eliminado paddingTop excesivo --- */
+  ladoBlanco: { flex: 1, height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#fff' },
+  boxForm: { display: 'flex', flexDirection: 'column' },
+  stackInputs: { display: 'flex', flexDirection: 'column', gap: '8px' },
+  grpInput: { display: 'flex', flexDirection: 'column', gap: '6px' },
+  lblTxt: { fontSize: '12px', fontWeight: '700', color: '#334155' },
+  inputBox: { padding: '10px', border: '1.5px solid #e2e8f0', borderRadius: '10px', outline: 'none', fontSize: '14px', boxSizing: 'border-box' },
+  filaRoles: { display: 'flex', gap: '8px' },
+  btRol: { flex: 1, padding: '8px', border: '2px solid #e2e8f0', borderRadius: '10px', background: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '12px' },
+  btRolOn: { borderColor: '#f59e0b', background: '#fffbeb', color: '#b45309' },
+  btnSubmit: { padding: '12px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: 'white', border: 'none', borderRadius: '10px', fontWeight: '700', fontSize: '14px', marginTop: '6px' },
+  footLink: { textAlign: 'center', marginTop: '12px', fontSize: '12px', color: '#94a3b8' },
+  shapeOverlay: { position: 'absolute', width: '260px', height: '260px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.05)', top: '-48px', right: '-48px' }
 };
 
 export default ModuloInscripcion;
