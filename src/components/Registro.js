@@ -172,7 +172,7 @@ const ModuloInscripcion = () => {
 
     try {
       const response = await fetch(
-        'http://localhost:4000/api/register',
+        'https://backend-46yr.onrender.com/api/register',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
