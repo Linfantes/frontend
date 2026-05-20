@@ -21,7 +21,7 @@ const Dashboard = () => {
       try {
         const token = localStorage.getItem('token');
         
-        const respuesta = await fetch('http://localhost:4000/api/pacientes/dashboard', {
+        const respuesta = await fetch('https://backend-46yr.onrender.com/api/pacientes/dashboard', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
