@@ -21,7 +21,7 @@ const Admision = () => {
 
   useEffect(() => {
 
-    fetch('https://vitalsmedic-production.up.railway.app/api/doctores')
+    fetch('https://backend-46yr.onrender.com/api/doctores')
       .then(res => res.json())
       .then(data => {
         setDoctores(data);
