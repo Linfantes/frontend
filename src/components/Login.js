@@ -30,7 +30,7 @@ const InicioSesion = () => {
     setCargando(true);
     setMensaje('');
     try {
-      const respuesta = await fetch('https://vitalsmedic-production.up.railway.app/api/login', {
+      const respuesta = await fetch('http://localhost:4000/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dni }),
@@ -39,7 +39,9 @@ const InicioSesion = () => {
       
       if (data.success) {
         if (data.rol === 'Paciente') {
+          // El paciente entra sin contraseña
           localStorage.setItem('dniUsuario', dni);
+          localStorage.setItem('rol', 'Paciente');
           navigate('/paciente');
         } else {
           setUsuarioNoPaciente(data);
@@ -70,7 +72,7 @@ const InicioSesion = () => {
     setMensaje('');
 
     try {
-      const respuesta = await fetch('https://vitalsmedic-production.up.railway.app/api/login', {
+      const respuesta = await fetch('http://localhost:4000/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dni, password: contraseña }),
@@ -79,17 +81,22 @@ const InicioSesion = () => {
       const data = await respuesta.json();
 
       if (data.success) {
+        
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+        }
+        localStorage.setItem('rol', data.rol);
+        localStorage.setItem('dniUsuario', dni);
+        
+        // Redirigir según el rol
         switch (data.rol) {
           case 'Admin':
-            localStorage.setItem('rol', data.rol);
             navigate('/registro');
             break;
           case 'Doctor':
-            localStorage.setItem('rol', data.rol);
             navigate('/dashboard');
             break;
           case 'Admision':
-            localStorage.setItem('rol', data.rol);
             navigate('/admision');
             break;
           default:
@@ -97,7 +104,12 @@ const InicioSesion = () => {
             setTipoMensaje('error');
         }
       } else {
+        // En caso de fallar (contraseña incorrecta o cuenta bloqueada)
         setMensaje(` ${data.error || 'Credenciales incorrectas'}`);
+        // Si mandamos details (intentos restantes o bloqueo), lo mostramos también
+        if (data.details) {
+          setMensaje(`${data.error}: ${data.details}`);
+        }
         setTipoMensaje('error');
       }
     } catch (err) {
@@ -147,7 +159,6 @@ const InicioSesion = () => {
               maxLength={8}
               onKeyDown={(e) => {
                 const teclasPermitidas = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Enter'];
-                // Bloquea cualquier tecla que no sea número o de control
                 if (!/^[0-9]$/.test(e.key) && !teclasPermitidas.includes(e.key) && !e.ctrlKey && !e.metaKey) {
                   e.preventDefault();
                 }
